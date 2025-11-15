@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { inferAsyncReturnType } from '@trpc/server';
-import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
-import { verifyToken, JwtPayload } from '../utils/auth.js';
+import type { Request, Response } from 'express';
+import { verifyToken } from '../utils/auth.js';
 
 const prisma = new PrismaClient();
 
@@ -20,7 +19,7 @@ export interface AuthUser {
  * @param opts - Express context options containing request and response
  * @returns Context object with Prisma client and optional authenticated user
  */
-export async function createContext({ req, res }: CreateExpressContextOptions) {
+export async function createContext({ req, res }: { req: Request; res: Response }) {
   // Extract token from Authorisation header
   const authHeader = req.headers.authorization;
   let user: AuthUser | null = null;
@@ -29,7 +28,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
     const token = authHeader.substring(7);
     
     try {
-      const payload: JwtPayload = verifyToken(token);
+      const payload = verifyToken(token);
       user = {
         userId: payload.userId,
         username: payload.username,
@@ -48,4 +47,4 @@ export async function createContext({ req, res }: CreateExpressContextOptions) {
   };
 }
 
-export type Context = inferAsyncReturnType<typeof createContext>;
+export type Context = Awaited<ReturnType<typeof createContext>>;
