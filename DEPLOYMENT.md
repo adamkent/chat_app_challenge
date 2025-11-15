@@ -31,7 +31,7 @@ npm run dev
 
 Backend runs on `http://localhost:3001`
 
-### 3. Frontend Setup - Seperate terminal
+### 3. Frontend Setup - Separate terminal
 
 ```bash
 cd frontend
