@@ -1,13 +1,10 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import type { Context } from './context.js';
-import superjson from 'superjson';
 
 /**
- * Initialise tRPC with SuperJSON transformer for handling dates and other complex types.
+ * Initialise tRPC instance.
  */
-const t = initTRPC.context<Context>().create({
-  transformer: superjson,
-});
+const t = initTRPC.context<Context>().create();
 
 /**
  * Export reusable router and procedure helpers.
