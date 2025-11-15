@@ -5,6 +5,7 @@ import { applyWSSHandler } from '@trpc/server/adapters/ws';
 import { WebSocketServer } from 'ws';
 import { appRouter } from './trpc/routers/index.js';
 import { createContext } from './trpc/context.js';
+import { verifyToken } from './utils/auth.js';
 
 /**
  * Main Express application server with tRPC and WebSocket support.
@@ -72,19 +73,47 @@ const server = app.listen(PORT, () => {
 const wss = new WebSocketServer({
   server,
   path: '/trpc',
+  verifyClient: (info) => {
+    // Allow all origins for development
+    console.log('WebSocket verify client:', info.origin);
+    return true;
+  },
 });
 
 const wsHandler = applyWSSHandler({
   wss,
   router: appRouter,
-  createContext: async () => {
+  createContext: async (opts: any) => {
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
-    // For WebSocket connections, create a minimal context
+    
+    console.log('WebSocket connection attempt:', {
+      hasReq: !!opts.req,
+      hasInfo: !!opts.info,
+      connectionParams: opts.info?.connectionParams,
+    });
+    
+    // Extract JWT from WebSocket connection params
+    let user = null;
+    const connectionParams = opts.info?.connectionParams;
+    const token = connectionParams?.authorization?.replace('Bearer ', '');
+    
+    if (token) {
+      try {
+        const decoded = verifyToken(token);
+        user = decoded;
+        console.log('WebSocket authenticated:', user.username);
+      } catch (error) {
+        console.error('WebSocket auth failed:', error);
+      }
+    } else {
+      console.log('No token in WebSocket connection');
+    }
+    
     return {
       prisma,
-      user: null,
-      req: {} as any,
+      user,
+      req: opts.req as any,
       res: {} as any,
     };
   },

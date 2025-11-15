@@ -26,6 +26,17 @@ export function ChatWindow({ threadId }: ChatWindowProps) {
 
   const utils = trpc.useUtils();
 
+  // Subscribe to new messages in this thread
+  trpc.message.onNew.useSubscription(
+    { threadId },
+    {
+      onData: () => {
+        // Force refetch messages when new message arrives
+        utils.message.list.refetch({ threadId });
+      },
+    }
+  );
+
   /**
    * Scrolls to the bottom of the message list.
    */
