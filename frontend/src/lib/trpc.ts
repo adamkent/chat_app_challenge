@@ -19,6 +19,7 @@ export function createTRPCClient(getToken: () => string | null) {
   // Create WebSocket client for subscriptions with auth
   const wsClient = createWSClient({
     url: wsUrl,
+    lazy: true, // Only connect when subscription is active
     connectionParams: () => {
       const token = getToken();
       return token ? { authorization: `Bearer ${token}` } : {};

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 /**
  * Authenticated user information.
@@ -33,25 +33,27 @@ const USER_KEY = 'auth_user';
  * @returns Provider component
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  // Load auth state from localStorage
-  useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(TOKEN_KEY);
+  });
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null;
     const storedUser = localStorage.getItem(USER_KEY);
 
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-      }
+    if (!storedUser) {
+      return null;
     }
-  }, []);
+
+    try {
+      return JSON.parse(storedUser) as User;
+    } catch (error) {
+      console.error('Failed to parse stored user:', error);
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      return null;
+    }
+  });
 
   /**
    * Logs in the user and persists credentials.

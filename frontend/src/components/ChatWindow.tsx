@@ -30,9 +30,13 @@ export function ChatWindow({ threadId }: ChatWindowProps) {
   trpc.message.onNew.useSubscription(
     { threadId },
     {
-      onData: () => {
+      onData: (newMessage) => {
+        console.log('New message received via WebSocket:', newMessage);
         // Force refetch messages when new message arrives
         utils.message.list.refetch({ threadId });
+      },
+      onError: (error) => {
+        console.error('Subscription error:', error);
       },
     }
   );

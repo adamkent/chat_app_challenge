@@ -19,9 +19,10 @@ docker-compose up -d
 This starts PostgreSQL on port 5432 and pgAdmin on port 5050.
 
 ### 2. Backend Setup
-
+ 
 ```bash
 cd backend
+cp .env.example .env
 npm install
 npx prisma migrate dev
 npx prisma db seed
@@ -30,7 +31,7 @@ npm run dev
 
 Backend runs on `http://localhost:3001`
 
-### 3. Frontend Setup
+### 3. Frontend Setup - Seperate terminal
 
 ```bash
 cd frontend

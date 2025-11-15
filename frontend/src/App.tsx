@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { trpc, createTRPCClient } from './lib/trpc';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { MessagingPage } from './pages/MessagingPage';
 
@@ -27,32 +27,33 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
  * @returns Application component
  */
 function App() {
-  const [trpcClient] = useState(() =>
-    createTRPCClient(() => {
-      const token = localStorage.getItem('auth_token');
-      return token;
-    })
+  const { token } = useAuth();
+  const authToken = token ?? (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
+  const trpcClient = useMemo(
+    () =>
+      createTRPCClient(() => {
+        return authToken;
+      }),
+    [authToken]
   );
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/messages"
-                element={
-                  <ProtectedRoute>
-                    <MessagingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/" element={<Navigate to="/messages" replace />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <MessagingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/messages" replace />} />
+          </Routes>
+        </BrowserRouter>
       </QueryClientProvider>
     </trpc.Provider>
   );
