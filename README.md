@@ -12,7 +12,7 @@ A real-time messaging application with end-to-end type-safe API communication.
 ## Project Structure
 
 ```
-legora_chat/
+chat_app_challenge/
 ├── backend/              # Node.js backend with tRPC API
 │   ├── prisma/          # Database schema and migrations
 │   ├── src/
