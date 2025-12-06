@@ -1,4 +1,4 @@
-# Legora Chat
+# Chat
 
 A real-time messaging application with end-to-end type-safe API communication.
 
